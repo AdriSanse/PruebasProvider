@@ -22,6 +22,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class EleccionSala_Activity extends AppCompatActivity implements View.OnClickListener{
@@ -31,6 +32,8 @@ public class EleccionSala_Activity extends AppCompatActivity implements View.OnC
     ArrayList<String> misIdSala;
     Spinner salasCombo;
     FirebaseFirestore db;
+    private ArrayAdapter<Sala> salaAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,10 +49,12 @@ public class EleccionSala_Activity extends AppCompatActivity implements View.OnC
         Intent miIntento = getIntent();
         misIdSala = (ArrayList<String>) miIntento.getSerializableExtra("id");
         idUsuario = (String) miIntento.getSerializableExtra("idUsuario");
+
         cargarDatos();
     }
     public void cargarDatos(){
-        final ArrayList<Sala> lista = new ArrayList<>();
+        salaAdapter = new ArrayAdapter<>(EleccionSala_Activity.this,R.layout.support_simple_spinner_dropdown_item,new ArrayList<Sala>());
+        salasCombo.setAdapter(salaAdapter);
         for(String a: misIdSala){
             DocumentReference miColeccionSala = db.collection("Salas").document(a);
             miColeccionSala.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -57,14 +62,15 @@ public class EleccionSala_Activity extends AppCompatActivity implements View.OnC
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if(task.isSuccessful()){
                         Sala miSala = new Sala(task.getResult().get("id").toString(), task.getResult().get("nombreSala").toString());
-                        lista.add(miSala);
+                        salaAdapter.add(miSala);
                         Toast.makeText(EleccionSala_Activity.this, ""+task.getResult().get("nombreSala"), Toast.LENGTH_SHORT).show();
+                        salaAdapter.notifyDataSetChanged();
                     }
                 }
             });
         }
-        ArrayAdapter<Sala> salaAdapter = new ArrayAdapter<>(EleccionSala_Activity.this,R.layout.support_simple_spinner_dropdown_item,lista);
-        salasCombo.setAdapter(salaAdapter);
+
+
     }
 
     @Override

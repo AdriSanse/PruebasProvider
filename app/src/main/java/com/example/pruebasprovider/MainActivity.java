@@ -10,12 +10,18 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.pruebasprovider.Objects.Sala;
 import com.example.pruebasprovider.Objects.User;
 import com.example.pruebasprovider.providers.Autentificacion;
 import com.example.pruebasprovider.providers.UsuariosProvider;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirestoreRegistrar;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -27,7 +33,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
         auth = new Autentificacion();
         usuarioProvider = new UsuariosProvider();
         nombre = findViewById(R.id.TextNombre);
@@ -38,8 +43,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnRegistrar.setOnClickListener(this);
         cambio = findViewById(R.id.textCambioaInicio);
         cambio.setOnClickListener(this);
-        
+
+
     }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(FirebaseAuth.getInstance().getUid()!=null){
+            startActivity(new Intent(this,PaginaPrincipal.class));
+        }
+    }
+
+
 
     @Override
     public void onClick(View view) {

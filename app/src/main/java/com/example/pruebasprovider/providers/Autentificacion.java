@@ -32,4 +32,5 @@ public class Autentificacion {
     public void logOut(){
         auth.signOut();
     }
+
 }
