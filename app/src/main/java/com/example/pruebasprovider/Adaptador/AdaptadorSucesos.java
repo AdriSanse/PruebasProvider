@@ -10,48 +10,48 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pruebasprovider.Objects.Sucesos;
 import com.example.pruebasprovider.R;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
 import java.util.ArrayList;
 
-public class AdaptadorSucesos extends RecyclerView.Adapter<AdaptadorSucesos.ViewHolderSucesos> {
+public class AdaptadorSucesos extends FirestoreRecyclerAdapter<Sucesos, AdaptadorSucesos.ViewHolderSucesos> {
 
     ArrayList<Sucesos> misSucesos;
 
-    public AdaptadorSucesos(ArrayList<Sucesos> misSucesos) {
-        this.misSucesos = misSucesos;
+    /**
+     * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
+     * FirestoreRecyclerOptions} for configuration options.
+     *
+     * @param options
+     */
+    public AdaptadorSucesos(@NonNull FirestoreRecyclerOptions<Sucesos> options) {
+        super(options);
     }
 
     @NonNull
     @Override
     public ViewHolderSucesos onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View miView = LayoutInflater.from(parent.getContext()).inflate(R.layout.sucesos_lista,null,false);
-        return new ViewHolderSucesos(miView);
+        View miView = LayoutInflater.from(parent.getContext()).inflate(R.layout.sucesos_lista,parent,false);
+        ViewHolderSucesos holder = new ViewHolderSucesos(miView);
+        return holder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolderSucesos holder, int position) {
-        holder.nombreTxt.setText(misSucesos.get(position).getUsuario());
-        holder.fechaTxt.setText(misSucesos.get(position).getFecha());
-        holder.asuntoTxt.setText(misSucesos.get(position).getAsunto());
-        holder.dineroTxt.setText(misSucesos.get(position).getDinero());
-    }
+    protected void onBindViewHolder(@NonNull ViewHolderSucesos holder, int position, @NonNull Sucesos suceso) {
 
-
-    @Override
-    public int getItemCount() {
-        return misSucesos.size();
+        holder.asuntoTxt.setText("El asunto fue "+suceso.getAsunto()+" el dia "+suceso.getFecha()+" con un "+suceso.getGastoIngreso()+" de "+suceso.getDinero()+"€");
+        holder.nombreTxt.setText(suceso.getUsuario());
     }
 
     public class ViewHolderSucesos extends RecyclerView.ViewHolder {
 
-        TextView nombreTxt, fechaTxt, asuntoTxt, dineroTxt;
+        TextView nombreTxt, asuntoTxt;
 
         public ViewHolderSucesos(@NonNull View itemView) {
             super(itemView);
             nombreTxt = itemView.findViewById(R.id.nombreUsuario);
-            fechaTxt = itemView.findViewById(R.id.fechaSuceso);
             asuntoTxt = itemView.findViewById(R.id.ArgumentoSuceso);
-            dineroTxt = itemView.findViewById(R.id.dineroSuceso);
 
         }
     }

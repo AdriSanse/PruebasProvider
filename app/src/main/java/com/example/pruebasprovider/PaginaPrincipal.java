@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.pruebasprovider.Objects.Sala;
 import com.example.pruebasprovider.providers.Autentificacion;
 import com.example.pruebasprovider.providers.UsuariosProvider;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -20,6 +21,9 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PaginaPrincipal extends AppCompatActivity implements View.OnClickListener{
 
@@ -96,13 +100,17 @@ public class PaginaPrincipal extends AppCompatActivity implements View.OnClickLi
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if(task.isSuccessful()){
+                        ArrayList<String> misSalas = new ArrayList<>();
+                        String id="";
                         for(DocumentSnapshot document : task.getResult()){
-                            String id = (String) document.get("id");
-                            Intent miIntento3 = new Intent(PaginaPrincipal.this,EleccionSala_Activity.class);
-                            miIntento3.putExtra("id",id);
-                            miIntento3.putExtra("idUsuario",idUsuario);
-                            startActivity(miIntento3);
+                            id =(String) document.get("id");
+                            misSalas.add(id);
                         }
+                        Intent miIntento3 = new Intent(PaginaPrincipal.this,EleccionSala_Activity.class);
+                        miIntento3.putExtra("id",misSalas);
+                        miIntento3.putExtra("idUsuario",idUsuario);
+                        startActivity(miIntento3);
+                        Toast.makeText(PaginaPrincipal.this, ""+id, Toast.LENGTH_SHORT).show();
                     }
                 }
             });

@@ -14,7 +14,9 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.pruebasprovider.Objects.Sala;
 import com.example.pruebasprovider.Objects.Sucesos;
+import com.example.pruebasprovider.providers.Autentificacion;
 import com.example.pruebasprovider.providers.SalaProviders;
 import com.example.pruebasprovider.providers.UsuariosProvider;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -43,9 +45,11 @@ public class SalaPersonal_Activity extends AppCompatActivity implements View.OnC
     TextView textoDineroCambiar, textoDineroCargar, textoAsunto, textoFecha;
     RadioButton radioGasto, radioIngreso;
     Button btnActualizar, btnCalendario;
+    Autentificacion auth;
     SalaProviders salaProviders;
+    UsuariosProvider userProviders;
     FirebaseFirestore db;
-    String id, fechaS, idUsuario;
+    String id, fechaS, idUsuario, nombre;
     private ListenerRegistration miEscuchador;
     Calendar mCalendar;
 
@@ -54,7 +58,9 @@ public class SalaPersonal_Activity extends AppCompatActivity implements View.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sala_personal_);
 
+        auth = new Autentificacion();
         salaProviders = new SalaProviders();
+        userProviders = new UsuariosProvider();
         db = FirebaseFirestore.getInstance();
 
         textoDineroCambiar = findViewById(R.id.textoDineroCambiador);
@@ -71,7 +77,9 @@ public class SalaPersonal_Activity extends AppCompatActivity implements View.OnC
         Intent miDinero = getIntent();
         id = (String) miDinero.getSerializableExtra("id");
         idUsuario = (String) miDinero.getSerializableExtra("idUsuario");
+        Toast.makeText(this, ""+idUsuario, Toast.LENGTH_SHORT).show();
         cargarDatos();
+        sacarUsuario();
     }
 
     public void cargarDatos(){
@@ -85,6 +93,7 @@ public class SalaPersonal_Activity extends AppCompatActivity implements View.OnC
                 }
             }
         });
+        Toast.makeText(this, "Eres "+idUsuario, Toast.LENGTH_SHORT).show();
 //        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
 //            @Override
 //            public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -97,6 +106,22 @@ public class SalaPersonal_Activity extends AppCompatActivity implements View.OnC
 //                }
 //            }
 //        });
+    }
+
+    public void sacarUsuario(){
+        Task<DocumentSnapshot> task = userProviders.getUsuario(auth.getIdUser()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Toast.makeText(SalaPersonal_Activity.this, ""+documentSnapshot.get("nombre").toString(), Toast.LENGTH_SHORT).show();
+                nombre = documentSnapshot.get("nombre").toString();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(SalaPersonal_Activity.this, "Algo ha fallodo", Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
 
     @Override
@@ -126,29 +151,31 @@ public class SalaPersonal_Activity extends AppCompatActivity implements View.OnC
                             for(DocumentSnapshot document : task.getResult()) {
                                 int dinero = Integer.parseInt("" + document.get("dinero"));
                                 int resultado = dinero - dineroInt;
-                                String sResultado = resultado + "";
-                                DocumentReference actuDinero = db.collection("Salas").document(document.getId());
-                                actuDinero.update("dinero",sResultado).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                final String sResultado = resultado + "";
+
+                                Sucesos miSuceso = new Sucesos();
+                                miSuceso.setDinero(""+dineroInt);
+                                miSuceso.setAsunto(sAsunto);
+                                miSuceso.setFecha(fechaS);
+                                miSuceso.setUsuario(nombre);
+                                miSuceso.setGastoIngreso("Gasto");
+                                DocumentReference actuDinero = db.collection("Salas").document(document.getId()).collection("Sucesos").document();
+                                actuDinero.set(miSuceso).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if(task.isSuccessful()){
-
-                                            Sucesos miSuceso = new Sucesos();
-                                            miSuceso.setDinero(""+dineroInt);
-                                            miSuceso.setAsunto(sAsunto);
-                                            miSuceso.setFecha(fechaS);
-                                            miSuceso.setUsuario(idUsuario);
-                                            miSuceso.setGastoIngreso("Gasto");
-
-                                            DocumentReference actuAsunto = db.collection("Salas").document(id);
-                                            actuAsunto.update("sucesos", FieldValue.arrayUnion(miSuceso)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            Toast.makeText(SalaPersonal_Activity.this, "Funciona Crear Sucesos Dentro de la Sala", Toast.LENGTH_SHORT).show();
+                                            DocumentReference actuDineroSala = db.collection("Salas").document(id);
+                                            actuDineroSala.update("dinero",sResultado).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     if(task.isSuccessful()){
-                                                        Toast.makeText(SalaPersonal_Activity.this, "Funciono", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(SalaPersonal_Activity.this, "Se actualizo el dinero de la sala", Toast.LENGTH_SHORT).show();
                                                     }
                                                 }
                                             });
+                                        }else{
+                                            Toast.makeText(SalaPersonal_Activity.this, "No funciono la creacion", Toast.LENGTH_SHORT).show();
                                         }
                                     }
                                 });
@@ -164,33 +191,36 @@ public class SalaPersonal_Activity extends AppCompatActivity implements View.OnC
                 query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
                         if(task.isSuccessful()){
                             for(DocumentSnapshot document : task.getResult()) {
                                 int dinero = Integer.parseInt("" + document.get("dinero"));
                                 int resultado = dinero + dineroInt;
-                                String sResultado = resultado + "";
-                                DocumentReference actuDinero = db.collection("Salas").document(document.getId());
-                                actuDinero.update("dinero",sResultado).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                final String sResultado = resultado + "";
+
+                                Sucesos miSuceso = new Sucesos();
+                                miSuceso.setDinero(""+dineroInt);
+                                miSuceso.setAsunto(sAsunto);
+                                miSuceso.setFecha(fechaS);
+                                miSuceso.setUsuario(nombre);
+                                miSuceso.setGastoIngreso("Ingreso");
+                                DocumentReference actuDinero = db.collection("Salas").document(document.getId()).collection("Sucesos").document();
+                                actuDinero.set(miSuceso).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if(task.isSuccessful()){
-
-                                            Sucesos miSuceso = new Sucesos();
-                                            miSuceso.setDinero(""+dineroInt);
-                                            miSuceso.setAsunto(sAsunto);
-                                            miSuceso.setFecha(fechaS);
-                                            miSuceso.setUsuario(idUsuario);
-                                            miSuceso.setGastoIngreso("Ingreso");
-
-                                            DocumentReference actuAsunto = db.collection("Salas").document(id);
-                                            actuAsunto.update("sucesos", FieldValue.arrayUnion(miSuceso)).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            Toast.makeText(SalaPersonal_Activity.this, "Funciona Crear Sucesos Dentro de la Sala", Toast.LENGTH_SHORT).show();
+                                            DocumentReference actuDineroSala = db.collection("Salas").document(id);
+                                            actuDineroSala.update("dinero",sResultado).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     if(task.isSuccessful()){
-                                                        Toast.makeText(SalaPersonal_Activity.this, "Funciono", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(SalaPersonal_Activity.this, "Se actualizo el dinero de la sala", Toast.LENGTH_SHORT).show();
                                                     }
                                                 }
                                             });
+                                        }else{
+                                            Toast.makeText(SalaPersonal_Activity.this, "No funciono la creacion", Toast.LENGTH_SHORT).show();
                                         }
                                     }
                                 });
@@ -202,8 +232,6 @@ public class SalaPersonal_Activity extends AppCompatActivity implements View.OnC
             textoFecha.setText("");
             textoAsunto.setText("");
             textoDineroCambiar.setText("");
-            radioIngreso.setChecked(false);
-            radioGasto.setChecked(false);
 
         }
 

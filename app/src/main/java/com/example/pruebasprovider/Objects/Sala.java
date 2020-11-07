@@ -6,8 +6,14 @@ import java.util.List;
 public class Sala {
     String id, nombreCreador, nombreSala, contrasena;
     String dinero;
-    List<String> grupo = new ArrayList<String>();
-    List<Sucesos> sucesos = new ArrayList<Sucesos>();
+    List<String> grupo;
+
+    public Sala(String id, String nombreSala) {
+        this.id = id;
+        this.nombreSala = nombreSala;
+    }
+    public Sala() {
+    }
 
     public String getId() {
         return id;
@@ -41,14 +47,6 @@ public class Sala {
         this.contrasena = contrasena;
     }
 
-    public List getGrupo() {
-        return grupo;
-    }
-
-    public void setGrupo(List grupo) {
-        this.grupo = grupo;
-    }
-
     public String getDinero() {
         return dinero;
     }
@@ -57,11 +55,16 @@ public class Sala {
         this.dinero = dinero;
     }
 
-    public List<Sucesos> getSucesos() {
-        return sucesos;
+    public List<String> getGrupo() {
+        return grupo;
     }
 
-    public void setSucesos(List<Sucesos> sucesos) {
-        this.sucesos = sucesos;
+    public void setGrupo(List<String> grupo) {
+        this.grupo = grupo;
+    }
+
+    @Override
+    public String toString() {
+        return nombreSala;
     }
 }
