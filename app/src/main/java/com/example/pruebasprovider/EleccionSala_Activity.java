@@ -69,18 +69,17 @@ public class EleccionSala_Activity extends AppCompatActivity implements View.OnC
                 }
             });
         }
-
-
     }
 
     @Override
     public void onClick(View view) {
         if(R.id.btnActividadSala==view.getId()){
-            Toast.makeText(this, ""+salasCombo.getSelectedItem(), Toast.LENGTH_SHORT).show();
-//            Intent miIntentoSucesos = new Intent(this, Sucesos_Activity.class);
-//            miIntentoSucesos.putExtra("id",salasCombo.getSelectedItemId());
-//            miIntentoSucesos.putExtra("idUsuario",idUsuario);
-//            startActivity(miIntentoSucesos);
+            Sala miIdSala = (Sala) salasCombo.getSelectedItem();
+            Toast.makeText(this, ""+miIdSala.getId(), Toast.LENGTH_SHORT).show();
+            Intent miIntentoSucesos = new Intent(this, Sucesos_Activity.class);
+            miIntentoSucesos.putExtra("id",miIdSala.getId());
+            miIntentoSucesos.putExtra("idUsuario",idUsuario);
+            startActivity(miIntentoSucesos);
         }
         if(R.id.btnIrSalaPersonal==view.getId()){
             Intent miIntentoSala = new Intent(this, SalaPersonal_Activity.class);
